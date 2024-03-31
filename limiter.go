@@ -40,9 +40,9 @@ func newLimiterExceptions(l *Limiter) {
 
 	// FileInput、KafkaInput have its own rate limiting. Unlike other inputs we not just dropping requests, we can slow down or speed up request emittion.
 	switch input := l.plugin.(type) {
-	case FileInput:
+	case *FileInput:
 		input.speedFactor = speedFactor
-	case KafkaInput:
+	case *KafkaInput:
 		input.speedFactor = speedFactor
 	}
 }
@@ -66,9 +66,9 @@ func (l *Limiter) isLimitedExceptions() bool {
 	}
 	// Fileinput、Kafkainput have its own limiting algorithm
 	switch l.plugin.(type) {
-	case FileInput:
+	case *FileInput:
 		return true
-	case KafkaInput:
+	case *KafkaInput:
 		return true
 	default:
 		return false
