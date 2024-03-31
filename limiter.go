@@ -31,6 +31,22 @@ func parseLimitOptions(options string) (limit int, isPercent bool) {
 	return
 }
 
+func newLimiterExceptions(l *Limiter) {
+
+	if !l.isPercent {
+		return
+	}
+	speedFactor := float64(l.limit) / float64(100)
+
+	// FileInput、KafkaInput have its own rate limiting. Unlike other inputs we not just dropping requests, we can slow down or speed up request emittion.
+	switch input := l.plugin.(type) {
+	case FileInput:
+		input.speedFactor = speedFactor
+	case KafkaInput:
+		input.speedFactor = speedFactor
+	}
+}
+
 // NewLimiter constructor for Limiter, accepts plugin and options
 // `options` allow to sprcify relatve or absolute limiting
 func NewLimiter(plugin interface{}, options string) PluginReadWriter {
@@ -39,17 +55,28 @@ func NewLimiter(plugin interface{}, options string) PluginReadWriter {
 	l.plugin = plugin
 	l.currentTime = time.Now().UnixNano()
 
-	// FileInput have its own rate limiting. Unlike other inputs we not just dropping requests, we can slow down or speed up request emittion.
-	if fi, ok := l.plugin.(*FileInput); ok && l.isPercent {
-		fi.speedFactor = float64(l.limit) / float64(100)
-	}
+	newLimiterExceptions(l)
 
 	return l
 }
 
+func (l *Limiter) isLimitedExceptions() bool {
+	if !l.isPercent {
+		return false
+	}
+	// Fileinput、Kafkainput have its own limiting algorithm
+	switch l.plugin.(type) {
+	case FileInput:
+		return true
+	case KafkaInput:
+		return true
+	default:
+		return false
+	}
+}
+
 func (l *Limiter) isLimited() bool {
-	// File input have its own limiting algorithm
-	if _, ok := l.plugin.(*FileInput); ok && l.isPercent {
+	if l.isLimitedExceptions() {
 		return false
 	}
 
