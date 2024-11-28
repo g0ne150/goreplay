@@ -2,19 +2,20 @@ package goreplay
 
 import (
 	"fmt"
-	"github.com/buger/goreplay/internal/byteutils"
 	"hash/fnv"
 	"io"
 	"log"
 	"sync"
+
+	"github.com/buger/goreplay/internal/byteutils"
 
 	"github.com/coocood/freecache"
 )
 
 // Emitter represents an abject to manage plugins communication
 type Emitter struct {
-	sync.WaitGroup
 	plugins *InOutPlugins
+	sync.WaitGroup
 }
 
 // NewEmitter creates and initializes new Emitter object.

@@ -3,11 +3,12 @@ package goreplay
 import (
 	"flag"
 	"fmt"
-	"github.com/buger/goreplay/internal/size"
 	"os"
 	"strconv"
 	"sync"
 	"time"
+
+	"github.com/buger/goreplay/internal/size"
 )
 
 // DEMO indicates that goreplay is running in demo mode
@@ -61,58 +62,45 @@ func (h *MultiIntOption) Set(value string) error {
 
 // AppSettings is the struct of main configuration
 type AppSettings struct {
-	Verbose   int           `json:"verbose"`
-	Stats     bool          `json:"stats"`
-	ExitAfter time.Duration `json:"exit-after"`
-
-	SplitOutput          bool   `json:"split-output"`
-	RecognizeTCPSessions bool   `json:"recognize-tcp-sessions"`
-	Pprof                string `json:"http-pprof"`
-
-	CopyBufferSize size.Size `json:"copy-buffer-size"`
-
-	InputDummy   []string `json:"input-dummy"`
-	OutputDummy  []string
-	OutputStdout bool `json:"output-stdout"`
-	OutputNull   bool `json:"output-null"`
-
-	InputTCP        []string `json:"input-tcp"`
-	InputTCPConfig  TCPInputConfig
-	OutputTCP       []string `json:"output-tcp"`
-	OutputTCPConfig TCPOutputConfig
-	OutputTCPStats  bool `json:"output-tcp-stats"`
-
-	OutputWebSocket       []string `json:"output-ws"`
+	OutputHTTPConfig      HTTPOutputConfig
+	OutputFileConfig      FileOutputConfig
+	OutputTCPConfig       TCPOutputConfig
 	OutputWebSocketConfig WebSocketOutputConfig
-	OutputWebSocketStats  bool `json:"output-ws-stats"`
-
-	InputFile          []string      `json:"input-file"`
-	InputFileLoop      bool          `json:"input-file-loop"`
-	InputFileReadDepth int           `json:"input-file-read-depth"`
-	InputFileDryRun    bool          `json:"input-file-dry-run"`
-	InputFileMaxWait   time.Duration `json:"input-file-max-wait"`
-	OutputFile         []string      `json:"output-file"`
-	OutputFileConfig   FileOutputConfig
-
-	InputRAW       []string `json:"input_raw"`
-	InputRAWConfig RAWInputConfig
-
-	Middleware string `json:"middleware"`
-
-	InputHTTP    []string
-	OutputHTTP   []string `json:"output-http"`
-	PrettifyHTTP bool     `json:"prettify-http"`
-
-	OutputHTTPConfig HTTPOutputConfig
-
-	OutputBinary       []string `json:"output-binary"`
-	OutputBinaryConfig BinaryOutputConfig
-
-	ModifierConfig HTTPModifierConfig
-
-	InputKafkaConfig  InputKafkaConfig
-	OutputKafkaConfig OutputKafkaConfig
-	KafkaTLSConfig    KafkaTLSConfig
+	InputRAWConfig        RAWInputConfig
+	InputKafkaConfig      InputKafkaConfig
+	OutputKafkaConfig     OutputKafkaConfig
+	KafkaTLSConfig        KafkaTLSConfig
+	InputTCPConfig        TCPInputConfig
+	Middleware            string `json:"middleware"`
+	Pprof                 string `json:"http-pprof"`
+	ModifierConfig        HTTPModifierConfig
+	InputDummy            []string `json:"input-dummy"`
+	OutputFile            []string `json:"output-file"`
+	InputTCP              []string `json:"input-tcp"`
+	OutputWebSocket       []string `json:"output-ws"`
+	OutputTCP             []string `json:"output-tcp"`
+	OutputBinary          []string `json:"output-binary"`
+	InputFile             []string `json:"input-file"`
+	OutputDummy           []string
+	InputRAW              []string `json:"input_raw"`
+	OutputHTTP            []string `json:"output-http"`
+	InputHTTP             []string
+	OutputBinaryConfig    BinaryOutputConfig
+	Verbose               int           `json:"verbose"`
+	InputFileMaxWait      time.Duration `json:"input-file-max-wait"`
+	InputFileReadDepth    int           `json:"input-file-read-depth"`
+	CopyBufferSize        size.Size     `json:"copy-buffer-size"`
+	ExitAfter             time.Duration `json:"exit-after"`
+	OutputStdout          bool          `json:"output-stdout"`
+	InputFileDryRun       bool          `json:"input-file-dry-run"`
+	PrettifyHTTP          bool          `json:"prettify-http"`
+	InputFileLoop         bool          `json:"input-file-loop"`
+	OutputWebSocketStats  bool          `json:"output-ws-stats"`
+	OutputTCPStats        bool          `json:"output-tcp-stats"`
+	OutputNull            bool          `json:"output-null"`
+	RecognizeTCPSessions  bool          `json:"recognize-tcp-sessions"`
+	SplitOutput           bool          `json:"split-output"`
+	Stats                 bool          `json:"stats"`
 }
 
 // Settings holds Gor configuration
@@ -273,7 +261,6 @@ func init() {
 	Settings.OutputFileConfig.SizeLimit = 33554432
 	Settings.OutputFileConfig.OutputFileMaxSize = 1099511627776
 	Settings.CopyBufferSize = 5242880
-
 }
 
 func CheckSettings() {
@@ -288,8 +275,10 @@ func CheckSettings() {
 	}
 }
 
-var previousDebugTime = time.Now()
-var debugMutex sync.Mutex
+var (
+	previousDebugTime = time.Now()
+	debugMutex        sync.Mutex
+)
 
 // Debug take an effect only if --verbose greater than 0 is specified
 func Debug(level int, args ...interface{}) {

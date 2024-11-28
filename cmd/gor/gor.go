@@ -6,7 +6,6 @@ import (
 	"expvar"
 	"flag"
 	"fmt"
-	"github.com/buger/goreplay"
 	"log"
 	"net/http"
 	"net/http/httputil"
@@ -17,6 +16,8 @@ import (
 	"runtime/pprof"
 	"syscall"
 	"time"
+
+	"github.com/buger/goreplay"
 )
 
 var (
